@@ -121,8 +121,11 @@ def main_select():
 
     # Get switches
     # Get the switches from the controller
-    bunch_of_switches = fabric.get_switches(c)
-
+    try:
+        bunch_of_switches = fabric.get_switches(c)
+    except:
+        error = "ERR-LOGIN - Failed to login to controller"
+        return render_template('sidekick/dberror.html', error=error)
 
     switch_data = []
     c = 0
