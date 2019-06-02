@@ -19,10 +19,23 @@
 # __maintainer__ = "Rick Kauffman"
 # __email__ = "rick.a.kauffman@hpe.com"
 
-import time
-from flask import current_app
-import datetime
+import json
+from pyhpecfm.auth import CFMClient
+from pyhpecfm import fabric
+from pyhpecfm import system
+import pprint
 
+# Authenticat to the controller
+client=CFMClient('172.18.1.66', 'admin','plexxi')
+uuid='6954793e2de3454f8560f6da6658ffdc'
+name='CFM SVT DEMO'
+description='HPE Composable Fabric'
 
-def utc_now_ts():
-    return int(time.time())
+# Get switches from plexxi controller
+try:
+    result = fabric.perform_fit(client, uuid, name, description)
+except:
+    error = "ERR-LOGIN - Failed to perfor fit on CFM controller"
+    print error
+
+print result

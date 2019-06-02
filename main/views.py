@@ -18,7 +18,6 @@
 # __version__ = "1.0.0"
 # __maintainer__ = "Rick Kauffman"
 # __email__ = "rick.a.kauffman@hpe.com"
-
 from flask import Blueprint, render_template, request, redirect, session, url_for, abort
 import os
 from werkzeug import secure_filename
@@ -124,8 +123,9 @@ def main_select():
     try:
         bunch_of_switches = fabric.get_switches(c)
     except:
-        error = "ERR-LOGIN - Failed to login to controller"
+        error = "ERR-LOGIN - Failed to log into CFM controller"
         return render_template('sidekick/dberror.html', error=error)
+
 
     switch_data = []
     c = 0

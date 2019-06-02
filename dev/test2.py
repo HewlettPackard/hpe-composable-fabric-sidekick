@@ -18,11 +18,30 @@
 # __version__ = "1.0.0"
 # __maintainer__ = "Rick Kauffman"
 # __email__ = "rick.a.kauffman@hpe.com"
+from flask import Blueprint, render_template, request, redirect, session, url_for, abort
+import os
+from werkzeug import secure_filename
+from mongoengine import Q
+import pygal
+import json
+from pyhpecfm.auth import CFMClient
+from pyhpecfm import fabric
+from pyhpecfm import system
+import pprint
 
-import time
-from flask import current_app
-import datetime
+# Authenticat to the controllers
+c=CFMClient('172.18.1.66', 'admin','plexxi')
 
+try:
+    cfm_audits = system.get_audit_logs(c)
+except:
+    error = "ERR-LOGIN - Failed to log into CFM controller"
+    print error
 
-def utc_now_ts():
-    return int(time.time())
+object = cfm_audits[0]['data']['event_object'][u'source_mac_address']
+object = str(object)
+print type(object)
+print object
+
+    #print(json.dumps(object, sort_keys=True, indent=4))
+    #z = str(object)
