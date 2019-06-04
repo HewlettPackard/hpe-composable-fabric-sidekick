@@ -31,11 +31,45 @@ from pyhpecfm.auth import CFMClient
 from pyhpecfm import fabric
 from pyhpecfm import system
 
-event_app = Blueprint('event_app', __name__)
+audit_app = Blueprint('audit_app', __name__)
 
+@audit_app.route('/view_alarms', methods=('GET', 'POST'))
+def view_alarms():
 
+    # Get user informaation.
+    creds = Sidekick.objects.first()
+    username=creds.user
+    username=username.encode('utf-8')
+    ipaddress=creds.ipaddress
+    ipaddress=ipaddress.encode('utf-8')
+    password=creds.passwd
+    password=password.encode('utf-8')
+    #append.rick('fail')
 
-@event_app.route('/view_events', methods=('GET', 'POST'))
+    # Create client connection
+    client = CFMClient(ipaddress, username, password)
+
+    try:
+        cfm_audits = system.get_audit_logs(client)
+    except:
+        error = "ERR-LOGIN - Failed to log into CFM controller"
+        return error
+
+    # Create a empty list for alarms
+    alarm_data = []
+
+    # Loop through cfm_audits and process ALARMS
+
+    for i in cfm_audits:
+        typex = i['record_type']
+        if typex == 'ALARM':
+            # Build dictionary to add to list
+            out = [i['data']['event_type'],i['record_type'],i['severity'],i['description']]
+            alarm_data.append(out)
+
+    return render_template('audits/alarms.html', a = alarm_data)
+
+@audit_app.route('/view_events', methods=('GET', 'POST'))
 def view_events():
     #import cfm_api_utils as c
     # Get user informaation.
@@ -67,4 +101,4 @@ def view_events():
             out = [i['description'],i['data']['event_type'],i['data']['object_name'],i['severity'],i['data']['event_type'],i['record_type']]
             event_data.append(out)
 
-    return render_template('events/events.html', e = event_data)
+    return render_template('audits/events.html', e = event_data)

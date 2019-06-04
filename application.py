@@ -50,11 +50,9 @@ def create_app(**config_overrides):
     from sidekick.views import sidekick_app
     app.register_blueprint(sidekick_app)
 
-    from alarms.views import alarm_app
-    app.register_blueprint(alarm_app)
+    from audit.views import audit_app
+    app.register_blueprint(audit_app)
 
-    from events.views import event_app
-    app.register_blueprint(event_app)
 
 
     return app
