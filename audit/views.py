@@ -1,3 +1,4 @@
+# -*-coding: utf-8 -*-
 # (C) Copyright 2019 Hewlett Packard Enterprise Development LP.
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -60,19 +61,18 @@ def view_alarms():
 
     # Loop through cfm_audits and process ALARMS
 
-    for i in cfm_audits:
-        typex = i['record_type']
+    for alarm in cfm_audits:
+        typex = alarm['record_type']
         if typex == 'ALARM':
             # Build dictionary to add to list
-            out = [i['data']['event_type'],i['record_type'],i['severity'],i['description']]
+            out = [alarm['data']['event_type'],alarm['record_type'],alarm['severity'],alarm['description']]
             alarm_data.append(out)
 
     return render_template('audits/alarms.html', a = alarm_data)
 
 @audit_app.route('/view_events', methods=('GET', 'POST'))
 def view_events():
-    #import cfm_api_utils as c
-    # Get user informaation.
+
     creds = Sidekick.objects.first()
     username=creds.user
     username=username.encode('utf-8')
@@ -94,11 +94,11 @@ def view_events():
     event_data = []
 
     # Loop through cfm_audits and process EVENTS
-    for i in cfm_audits:
-        typex = i['record_type']
+    for event in cfm_audits:
+        typex = event['record_type']
         if typex == 'EVENT':
             # Build dictionary to add to list
-            out = [i['description'],i['data']['event_type'],i['data']['object_name'],i['severity'],i['data']['event_type'],i['record_type']]
+            out = [event['description'],event['data']['event_type'],event['data']['object_name'],event['severity'],event['data']['event_type'],event['record_type']]
             event_data.append(out)
 
     return render_template('audits/events.html', e = event_data)
