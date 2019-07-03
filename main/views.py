@@ -31,7 +31,7 @@ from database.sidekick import Sidekick
 from database.number import Number
 from database.switches import Switches
 from pygal.style import LightGreenStyle
-from pyhpecfm.auth import CFMClient
+from pyhpecfm.client import CFMClient
 from pyhpecfm import fabric
 
 main_app = Blueprint('main_app', __name__)
@@ -61,13 +61,11 @@ def main_select():
     passwd = request.form['passwd']
     # Stash the user
     # Build record to write to mongo database
-    #global token
-    #token = c.get_token()
 
-
-
+     
     # Authenticat to the controller
-    c=CFMClient(ipaddress,user,passwd)
+    client=CFMClient(ipaddress,user,passwd)
+    client.connect()
 
 
     creds = Sidekick(user=user, passwd=passwd, ipaddress=ipaddress)
@@ -117,31 +115,28 @@ def main_select():
     except Exception, e:
 		return(str(e))
 
-
-    # Get switches
     # Get the switches from the controller
     try:
-        bunch_of_switches = fabric.get_switches(c)
+        switches = fabric.get_switches(client)
     except:
         error = "ERR-LOGIN - Failed to log into CFM controller"
         return render_template('sidekick/dberror.html', error=error)
 
 
     switch_data = []
-    c = 0
     # Process switch datat from plexxi API
-    for i in bunch_of_switches:
-        health = bunch_of_switches[c]['health']
-        ip_address = bunch_of_switches[c]['ip_address']
-        mac_address = bunch_of_switches[c]['mac_address']
-        name = bunch_of_switches[c]['name']
-        sw_version= bunch_of_switches[c]['sw_version']
+    for switch in switches:
+        health=switch['health']
+        ip_address=switch['ip_address']
+        mac_address=switch['mac_address']
+        name=switch['name']
+        sw_version=switch['sw_version']
 
         # Write to switches database
-        switch = Switches(health=health, ip_address=ip_address, mac_address=mac_address, name=name, sw_version=sw_version)
+        switch_info = Switches(health=health, ip_address=ip_address, mac_address=mac_address, name=name, sw_version=sw_version)
         # Save the record
         try:
-            switch.save()
+            switch_info.save()
         except:
             error = "ERR001X - Failed to save switch information"
             return render_template('sidekick/dberror.html', error=error)
@@ -149,7 +144,7 @@ def main_select():
         # Build list to write out to user interface
         out = [health,ip_address,mac_address,name,sw_version]
         switch_data.append(out)
-        c = c + 1
+
 
     return render_template('main/sidekick1.html', u=user, i=ipaddress, g1_data=g1_data, g2_data=g2_data, s = switch_data)
 
