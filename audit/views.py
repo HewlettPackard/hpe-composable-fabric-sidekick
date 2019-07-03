@@ -28,7 +28,7 @@ import json
 
 # Place to stach the user temporarily
 from database.sidekick import Sidekick
-from pyhpecfm.auth import CFMClient
+from pyhpecfm.client import CFMClient
 from pyhpecfm import fabric
 from pyhpecfm import system
 
@@ -49,6 +49,7 @@ def view_alarms():
 
     # Create client connection
     client = CFMClient(ipaddress, username, password)
+    client.connect()
 
     try:
         cfm_audits = system.get_audit_logs(client)
@@ -83,6 +84,7 @@ def view_events():
 
     # Authenticat to the controller
     client=CFMClient(ipaddress,username,password)
+    client.connect()
 
     try:
         cfm_audits = system.get_audit_logs(client)
