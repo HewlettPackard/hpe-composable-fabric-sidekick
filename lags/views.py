@@ -91,9 +91,6 @@ def process_lags():
     for lag in cfm_lags:
         if len(lag['port_properties']) > 1:
 
-            # Define name dictionary
-            name=lag['name']
-            name={'name': name}
             # Iterate through port_properties
             for item in lag['port_properties']:
                 lag_mode=item['lacp']['mode']
@@ -111,10 +108,6 @@ def process_lags():
                      'partner_port_state':lag_partner_port_state,
                      'actor_status':actor_lacp_status
                     }
-
-                port_props.append(properties)
-                partner = {'partner':port_props}
-                lag_data=[name,partner]
 
                 # Extract port detail.
                 for ports in item['ports']:
@@ -139,14 +132,17 @@ def process_lags():
                     }
 
                 port_detail.append(port_information)
-                ports = {'ports':port_detail}
+                #ports = {'ports':port_detail}
+            #----add port detail to the dictionary items
+            properties['ports'] = port_detail
+            properties['name'] = lag['name']
+            # Now make it a dictionary
+            properties={'properties': properties}
 
-            lag_data=[name,partner,ports]
+            lag_group.append(properties)
 
-            lag_group.append(lag_data)
 
         lag_data = []
         port_props = []
-        port_data=[]
         port_detail=[]
     return render_template('lags/lags.html', l=lag_group)
