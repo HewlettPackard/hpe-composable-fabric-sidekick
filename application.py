@@ -52,6 +52,8 @@ def create_app(**config_overrides):
 
     from audit.views import audit_app
     app.register_blueprint(audit_app)
+    from lags.views import lag_app
+    app.register_blueprint(lag_app)
 
 
 

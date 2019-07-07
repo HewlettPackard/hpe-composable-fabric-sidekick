@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Sidekick{% endblock %}
+
+{% block content %}
+
+{% include "navbar.html" %}
+
+
+    <div class="" id="home">
+
+        <div class="container">
+
+                <!-- Start of the table container.. -->
+                  <div class="container mt-5">
+                    <h1> Composable Fabric Lag Report </h1>
+                    <div class="row tm-content-row">
+                      <div class="col-sm-12 col-md-12 col-lg-12 col-xl-12 tm-block-col">
+                        <div class="tm-bg-primary-dark tm-block tm-block-products">
+                          <div class="tm-product-table-container">
+                            {{ l }}
+
+                          </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- End of the table container. -->
+
+            <div id="pieChartContainer">
+                <canvas id="pieChart" class="chartjs-render-monitor" width="200" height="200"></canvas>
+            </div>
+        </div>
+{% endblock %}
