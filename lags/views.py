@@ -16,7 +16,6 @@
 # __author__ = "@netwookie"
 # __credits__ = ["Rick Kauffman"]
 # __license__ = "Apache2.0"
-# __version__ = "1.0.0"
 # __maintainer__ = "Rick Kauffman"
 # __email__ = "rick.a.kauffman@hpe.com"
 #
@@ -35,25 +34,15 @@ from database.sidekick import Sidekick
 from pyhpecfm.client import CFMClient
 from pyhpecfm import fabric
 from pyhpecfm import system
+from utilities.get_client import access_client
 
-lag_app = Blueprint('lag_app', __name__)
+lag_app=Blueprint('lag_app', __name__)
 
 @lag_app.route('/process_lags', methods=('GET', 'POST'))
 def process_lags():
 
-    # Get user informaation..
-    creds = Sidekick.objects.first()
-    username=creds.user
-    username=username.encode('utf-8')
-    ipaddress=creds.ipaddress
-    ipaddress=ipaddress.encode('utf-8')
-    password=creds.passwd
-    password=password.encode('utf-8')
-    #append.rick('fail')
-
-    # Create client connection
-    client = CFMClient(ipaddress, username, password)
-    client.connect()
+    # Get a client connection.
+    client=access_client()
 
     # assignment of attributes
     count_only=False
@@ -65,22 +54,22 @@ def process_lags():
     type='provisioned'
     vlan_groups=True
     # Create an attribute dictionary
-    params = {
-                'count_only': count_only,
-                'mac_attachments': mac_attachments,
-                'mac_learning': mac_learning,
-                'ports': ports,
-                'port_type': port_type,
-                'tags': tags,
-                'type': type,
-                'vlan_groups': vlan_groups
-              }
+    params={
+            'count_only': count_only,
+            'mac_attachments': mac_attachments,
+            'mac_learning': mac_learning,
+            'ports': ports,
+            'port_type': port_type,
+            'tags': tags,
+            'type': type,
+            'vlan_groups': vlan_groups
+        }
 
    # Pull the CFM controller for all lags
     try:
-        cfm_lags = fabric.get_lags(client, params)
+        cfm_lags=fabric.get_lags(client, params)
     except:
-        error = "ERR-LOGIN - Failed to log into CFM controller"
+        error="ERR-LOGIN - Failed to log into CFM controller"
         return error
 
     # build properties and ports disctionaries
@@ -134,15 +123,15 @@ def process_lags():
                 port_detail.append(port_information)
                 #ports = {'ports':port_detail}
             #----add port detail to the dictionary items
-            properties['ports'] = port_detail
-            properties['name'] = lag['name']
+            properties['ports']=port_detail
+            properties['name']=lag['name']
             # Now make it a dictionary
             properties={'properties': properties}
 
             lag_group.append(properties)
 
 
-        lag_data = []
-        port_props = []
+        lag_data=[]
+        port_props=[]
         port_detail=[]
     return render_template('lags/lags.html', l=lag_group)

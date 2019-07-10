@@ -28,79 +28,59 @@ import json
 
 # Place to stach the user temporarily
 from database.sidekick import Sidekick
-from pyhpecfm.client import CFMClient
 from pyhpecfm import fabric
 from pyhpecfm import system
+from utilities.get_client import access_client
 
-audit_app = Blueprint('audit_app', __name__)
+audit_app=Blueprint('audit_app', __name__)
 
 @audit_app.route('/view_alarms', methods=('GET', 'POST'))
 def view_alarms():
 
-    # Get user informaation.
-    creds = Sidekick.objects.first()
-    username=creds.user
-    username=username.encode('utf-8')
-    ipaddress=creds.ipaddress
-    ipaddress=ipaddress.encode('utf-8')
-    password=creds.passwd
-    password=password.encode('utf-8')
-    #append.rick('fail')
-
-    # Create client connection
-    client = CFMClient(ipaddress, username, password)
-    client.connect()
+    # Get a client connection.
+    client=access_client()
 
     try:
-        cfm_audits = system.get_audit_logs(client)
+        cfm_audits=system.get_audit_logs(client)
     except:
-        error = "ERR-LOGIN - Failed to log into CFM controller"
+        error="ERR-LOGIN - Failed to log into CFM controller"
         return error
 
     # Create a empty list for alarms
-    alarm_data = []
+    alarm_data=[]
 
     # Loop through cfm_audits and process ALARMS
 
     for alarm in cfm_audits:
-        typex = alarm['record_type']
+        typex=alarm['record_type']
         if typex == 'ALARM':
             # Build dictionary to add to list
-            out = [alarm['data']['event_type'],alarm['record_type'],alarm['severity'],alarm['description']]
+            out=[alarm['data']['event_type'],alarm['record_type'],alarm['severity'],alarm['description']]
             alarm_data.append(out)
 
-    return render_template('audits/alarms.html', a = alarm_data)
+    return render_template('audits/alarms.html', a=alarm_data)
 
 @audit_app.route('/view_events', methods=('GET', 'POST'))
 def view_events():
 
-    creds = Sidekick.objects.first()
-    username=creds.user
-    username=username.encode('utf-8')
-    ipaddress=creds.ipaddress
-    ipaddress=ipaddress.encode('utf-8')
-    password=creds.passwd
-    password=password.encode('utf-8')
-
-    # Authenticat to the controller
-    client=CFMClient(ipaddress,username,password)
-    client.connect()
+    # Get a client connection.
+    client=access_client()
 
     try:
-        cfm_audits = system.get_audit_logs(client)
+        cfm_audits=system.get_audit_logs(client)
     except:
-        error = "ERR-LOGIN - Failed to log into CFM controller"
+        error="ERR-LOGIN - Failed to log into CFM controller"
         return error
 
     # Create a empty list for EVENTS
-    event_data = []
+    event_data=[]
 
     # Loop through cfm_audits and process EVENTS
     for event in cfm_audits:
-        typex = event['record_type']
+        typex=event['record_type']
         if typex == 'EVENT':
             # Build dictionary to add to list
-            out = [event['description'],event['data']['event_type'],event['data']['object_name'],event['severity'],event['data']['event_type'],event['record_type']]
+            out=[event['description'],event['data']['event_type'],event['data']['object_name'],event['severity'],event['data']['event_type'],event['record_type']]
             event_data.append(out)
 
-    return render_template('audits/events.html', e = event_data)
+    return render_template('audits/events.html', e=event_data)

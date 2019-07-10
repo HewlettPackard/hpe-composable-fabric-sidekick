@@ -15,9 +15,9 @@
 # __author__ = "@netwookie"
 # __credits__ = ["Rick Kauffman"]
 # __license__ = "Apache2.0"
-# __version__ = "1.0.0"
 # __maintainer__ = "Rick Kauffman"
 # __email__ = "rick.a.kauffman@hpe.com"
+
 from flask import Blueprint, render_template, request, redirect, session, url_for, abort
 import os
 from werkzeug import secure_filename
@@ -34,7 +34,7 @@ from pygal.style import LightGreenStyle
 from pyhpecfm.client import CFMClient
 from pyhpecfm import fabric
 
-main_app = Blueprint('main_app', __name__)
+main_app=Blueprint('main_app', __name__)
 
 @main_app.route('/main', methods=('GET', 'POST'))
 @main_app.route('/', methods=('GET', 'POST'))
@@ -56,25 +56,22 @@ def help():
 @main_app.route('/main_select', methods=('GET', 'POST'))
 def main_select():
     #import cfm_api_utils as c
-    ipaddress = request.form['ipaddress']
-    user = request.form['user']
-    passwd = request.form['passwd']
-    # Stash the user
-    # Build record to write to mongo database
+    ipaddress=request.form['ipaddress']
+    user=request.form['user']
+    passwd=request.form['passwd']
 
-     
     # Authenticat to the controller
     client=CFMClient(ipaddress,user,passwd)
     client.connect()
 
 
-    creds = Sidekick(user=user, passwd=passwd, ipaddress=ipaddress)
+    creds = Sidekick(user=user,passwd=passwd,ipaddress=ipaddress)
     # Save the record
 
     try:
         creds.save()
     except:
-        error = "ERR001 - Failed to save login credentials"
+        error="ERR001 - Failed to save login credentials"
         return render_template('sidekick/dberror.html', error=error)
 
 
@@ -92,18 +89,18 @@ def main_select():
 
     try:
         from pygal.style import DarkSolarizedStyle
-        g1 = pygal.StackedLine(fill=True, interpolate='cubic', style=DarkSolarizedStyle)
+        g1=pygal.StackedLine(fill=True, interpolate='cubic', style=DarkSolarizedStyle)
         g1.add('A', [1, 3,  5, 16, 13, 3,  7])
         g1.add('B', [5, 2,  3,  2,  5, 7, 17])
         g1.add('C', [6, 10, 9,  7,  3, 1,  0])
         g1.add('D', [2,  3, 5,  9, 12, 9,  5])
         g1.add('E', [7,  4, 2,  1,  2, 10, 0])
-        g1_data = g1.render_data_uri()
+        g1_data=g1.render_data_uri()
     except Exception, e:
 		return(str(e))
 
     try:
-        line_chart = pygal.HorizontalBar()
+        line_chart=pygal.HorizontalBar()
         line_chart.title = 'Browser usage in February 2012 (in %)'
         line_chart.add('IE', 19.5)
         line_chart.add('Firefox', 36.6)
@@ -111,19 +108,18 @@ def main_select():
         line_chart.add('Safari', 4.5)
         line_chart.add('Opera', 2.3)
         line_chart.render()
-        g2_data = line_chart.render_data_uri()
+        g2_data=line_chart.render_data_uri()
     except Exception, e:
 		return(str(e))
 
     # Get the switches from the controller
     try:
-        switches = fabric.get_switches(client)
+        switches=fabric.get_switches(client)
     except:
-        error = "ERR-LOGIN - Failed to log into CFM controller"
+        error="ERR-LOGIN - Failed to log into CFM controller"
         return render_template('sidekick/dberror.html', error=error)
 
-
-    switch_data = []
+    switch_data=[]
     # Process switch datat from plexxi API
     for switch in switches:
         health=switch['health']
@@ -133,20 +129,20 @@ def main_select():
         sw_version=switch['sw_version']
 
         # Write to switches database
-        switch_info = Switches(health=health, ip_address=ip_address, mac_address=mac_address, name=name, sw_version=sw_version)
+        switch_info=Switches(health=health,ip_address=ip_address, mac_address=mac_address, name=name, sw_version=sw_version)
         # Save the record
         try:
             switch_info.save()
         except:
-            error = "ERR001X - Failed to save switch information"
+            error="ERR001X - Failed to save switch information"
             return render_template('sidekick/dberror.html', error=error)
 
         # Build list to write out to user interface
-        out = [health,ip_address,mac_address,name,sw_version]
+        out=[health,ip_address,mac_address,name,sw_version]
         switch_data.append(out)
 
 
-    return render_template('main/sidekick1.html', u=user, i=ipaddress, g1_data=g1_data, g2_data=g2_data, s = switch_data)
+    return render_template('main/sidekick1.html',u=user,i=ipaddress,g1_data=g1_data,g2_data=g2_data,s=switch_data)
 
 
 @main_app.route('/main_return', methods=('GET', 'POST'))
@@ -160,19 +156,19 @@ def main_return():
 
     try:
         from pygal.style import DarkSolarizedStyle
-        g1 = pygal.StackedLine(fill=True, interpolate='cubic', style=DarkSolarizedStyle)
+        g1=pygal.StackedLine(fill=True, interpolate='cubic', style=DarkSolarizedStyle)
         g1.add('A', [1, 3,  5, 16, 13, 3,  7])
         g1.add('B', [5, 2,  3,  2,  5, 7, 17])
         g1.add('C', [6, 10, 9,  7,  3, 1,  0])
         g1.add('D', [2,  3, 5,  9, 12, 9,  5])
         g1.add('E', [7,  4, 2,  1,  2, 10, 0])
-        g1_data = g1.render_data_uri()
+        g1_data=g1.render_data_uri()
     except Exception, e:
 		return(str(e))
 
     try:
-        line_chart = pygal.HorizontalBar()
-        line_chart.title = 'Browser usage in February 2012 (in %)'
+        line_chart=pygal.HorizontalBar()
+        line_chart.title='Browser usage in February 2012 (in %)'
         line_chart.add('IE', 19.5)
         line_chart.add('Firefox', 36.6)
         line_chart.add('Chrome', 36.3)
@@ -184,20 +180,20 @@ def main_return():
 		return(str(e))
 
     # Get switch information switch database
-    switch_array = []
+    switch_array=[]
     for s in Switches.objects():
         # assigne local variables
-        health = s.health
-        ip_address = s.ip_address
-        mac_address = s.mac_address
-        name = s.name
-        sw_version = s.sw_version
+        health=s.health
+        ip_address=s.ip_address
+        mac_address=s.mac_address
+        name=s.name
+        sw_version=s.sw_version
         # Creat a list for the record entry
-        out=[health, ip_address, mac_address, name, sw_version]
+        out=[health,ip_address,mac_address,name,sw_version]
         # Make a list of Lists
         switch_array.append(out)
 
-    return render_template('main/sidekick1.html', u=user, i=ipaddress, g1_data=g1_data, g2_data=g2_data, s = switch_array)
+    return render_template('main/sidekick1.html',u=user,i=ipaddress,g1_data=g1_data,g2_data=g2_data,s=switch_array)
 
 @main_app.route('/main_logout', methods=('GET', 'POST'))
 def main_logout():
@@ -206,24 +202,4 @@ def main_logout():
     # Dump the switches database
     Switches.objects().delete()
 
-
     return render_template('main/logout.html')
-
-@main_app.route('/main_tdb', methods=('GET', 'POST'))
-def main_tdb():
-
-    # Get switch information switch database
-    switch_array = []
-    for s in Switches.objects():
-        # assigne local variables
-        health = s.health
-        ip_address = s.ip_address
-        mac_address = s.mac_address
-        name = s.name
-        sw_version = s.sw_version
-        # Creat a list for the record entry
-        out=[health, ip_address, mac_address, name, sw_version]
-        # Make a list of Lists
-        switch_array.append(out)
-
-    return render_template('main/tdb.html', s=switch_array)

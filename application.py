@@ -22,11 +22,10 @@
 from flask import Flask
 from flask_mongoengine import MongoEngine
 
-
 db = MongoEngine()
 
 def create_app(**config_overrides):
-    app = Flask(__name__)
+    app=Flask(__name__)
     app.config.from_pyfile('settings.py')
 
     app.config['MONGODB_SETTINGS'] = {
@@ -37,8 +36,6 @@ def create_app(**config_overrides):
         'password': 'passwordForAppUser',
         'authentication_source': 'admin'
         }
-
-
 
     app.config.update(config_overrides)
 
@@ -52,9 +49,8 @@ def create_app(**config_overrides):
 
     from audit.views import audit_app
     app.register_blueprint(audit_app)
+
     from lags.views import lag_app
     app.register_blueprint(lag_app)
-
-
 
     return app
