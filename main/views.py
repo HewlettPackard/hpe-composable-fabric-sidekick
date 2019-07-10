@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # (C) Copyright 2019 Hewlett Packard Enterprise Development LP.
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,9 +31,10 @@ from database.temp import Temp
 from database.sidekick import Sidekick
 from database.number import Number
 from database.switches import Switches
-from pygal.style import LightGreenStyle
 from pyhpecfm.client import CFMClient
 from pyhpecfm import fabric
+from utilities.switch_array import get_switches
+from utilities.get_charts import build_charts
 
 main_app=Blueprint('main_app', __name__)
 
@@ -64,10 +66,9 @@ def main_select():
     client=CFMClient(ipaddress,user,passwd)
     client.connect()
 
-
+    # Build database entry to save creds
     creds = Sidekick(user=user,passwd=passwd,ipaddress=ipaddress)
     # Save the record
-
     try:
         creds.save()
     except:
@@ -85,34 +86,10 @@ def main_select():
         # return render_template('sidekick/dberror.html', error=error)
 
 
-    # Build some sample charts
+    # Returns a list a auto generated charts
+    charts=build_charts()
 
-    try:
-        from pygal.style import DarkSolarizedStyle
-        g1=pygal.StackedLine(fill=True, interpolate='cubic', style=DarkSolarizedStyle)
-        g1.add('A', [1, 3,  5, 16, 13, 3,  7])
-        g1.add('B', [5, 2,  3,  2,  5, 7, 17])
-        g1.add('C', [6, 10, 9,  7,  3, 1,  0])
-        g1.add('D', [2,  3, 5,  9, 12, 9,  5])
-        g1.add('E', [7,  4, 2,  1,  2, 10, 0])
-        g1_data=g1.render_data_uri()
-    except Exception, e:
-		return(str(e))
-
-    try:
-        line_chart=pygal.HorizontalBar()
-        line_chart.title = 'Browser usage in February 2012 (in %)'
-        line_chart.add('IE', 19.5)
-        line_chart.add('Firefox', 36.6)
-        line_chart.add('Chrome', 36.3)
-        line_chart.add('Safari', 4.5)
-        line_chart.add('Opera', 2.3)
-        line_chart.render()
-        g2_data=line_chart.render_data_uri()
-    except Exception, e:
-		return(str(e))
-
-    # Get the switches from the controller
+    # Get the switches from the controller and save to the mongo database
     try:
         switches=fabric.get_switches(client)
     except:
@@ -141,7 +118,6 @@ def main_select():
         out=[health,ip_address,mac_address,name,sw_version]
         switch_data.append(out)
 
-
     return render_template('main/sidekick1.html',u=user,i=ipaddress,g1_data=g1_data,g2_data=g2_data,s=switch_data)
 
 
@@ -153,47 +129,12 @@ def main_return():
     ipaddress= creds.ipaddress
 
     # Insert chart data
-
-    try:
-        from pygal.style import DarkSolarizedStyle
-        g1=pygal.StackedLine(fill=True, interpolate='cubic', style=DarkSolarizedStyle)
-        g1.add('A', [1, 3,  5, 16, 13, 3,  7])
-        g1.add('B', [5, 2,  3,  2,  5, 7, 17])
-        g1.add('C', [6, 10, 9,  7,  3, 1,  0])
-        g1.add('D', [2,  3, 5,  9, 12, 9,  5])
-        g1.add('E', [7,  4, 2,  1,  2, 10, 0])
-        g1_data=g1.render_data_uri()
-    except Exception, e:
-		return(str(e))
-
-    try:
-        line_chart=pygal.HorizontalBar()
-        line_chart.title='Browser usage in February 2012 (in %)'
-        line_chart.add('IE', 19.5)
-        line_chart.add('Firefox', 36.6)
-        line_chart.add('Chrome', 36.3)
-        line_chart.add('Safari', 4.5)
-        line_chart.add('Opera', 2.3)
-        line_chart.render()
-        g2_data = line_chart.render_data_uri()
-    except Exception, e:
-		return(str(e))
+    charts=build_charts()
 
     # Get switch information switch database
-    switch_array=[]
-    for s in Switches.objects():
-        # assigne local variables
-        health=s.health
-        ip_address=s.ip_address
-        mac_address=s.mac_address
-        name=s.name
-        sw_version=s.sw_version
-        # Creat a list for the record entry
-        out=[health,ip_address,mac_address,name,sw_version]
-        # Make a list of Lists
-        switch_array.append(out)
+    switch_array=get_switches()
 
-    return render_template('main/sidekick1.html',u=user,i=ipaddress,g1_data=g1_data,g2_data=g2_data,s=switch_array)
+    return render_template('main/sidekick1.html',u=user,i=ipaddress,g1_data=charts[0],g2_data=charts[1],s=switch_array)
 
 @main_app.route('/main_logout', methods=('GET', 'POST'))
 def main_logout():
