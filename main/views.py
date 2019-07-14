@@ -118,7 +118,7 @@ def main_select():
         out=[health,ip_address,mac_address,name,sw_version]
         switch_data.append(out)
 
-    return render_template('main/sidekick1.html',u=user,i=ipaddress,g1_data=g1_data,g2_data=g2_data,s=switch_data)
+    return render_template('main/sidekick1.html',u=user,i=ipaddress,g1_data=charts[0],g2_data=charts[1],s=switch_data)
 
 
 @main_app.route('/main_return', methods=('GET', 'POST'))
