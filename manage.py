@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # (C) Copyright 2019 Hewlett Packard Enterprise Development LP.
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,8 +21,6 @@
 # __maintainer__ = "Rick Kauffman"
 # __email__ = "rick.a.kauffman@hpe.com"
 
-#!/usr/bin/env python
-
 import os, sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -33,7 +33,7 @@ manager.add_command("runserver", Server(
     use_debugger=True,
     use_reloader=True,
     host=os.getenv('IP', '0.0.0.0'),
-    port=int(os.getenv('PORT', 5001)))
+    port=int(os.getenv('PORT', 5002)))
 )
 
 if __name__ == "__main__":

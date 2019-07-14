@@ -77,9 +77,9 @@
                                </span>
                            </a>
                            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                             <a class="dropdown-item" href="#">List Fabric IPs</a>
-                             <a class="dropdown-item" href="#">List Alarms</a>
-                             <a class="dropdown-item" href="#">List Events</a>
+                             <a class="dropdown-item" href="{{ url_for('audit_app.view_alarms') }}">List CFM Alarms</a>
+                             <a class="dropdown-item" href="{{ url_for('audit_app.view_events') }}">List CFM Events</a>
+                             <a class="dropdown-item" href="{{ url_for('lag_app.process_lags') }}">List Lags</a>
                            </div>
                        </li>
                    </ul>

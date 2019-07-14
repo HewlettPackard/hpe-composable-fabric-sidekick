@@ -1,3 +1,4 @@
+# -*-coding: utf-8 -*-
 # (C) Copyright 2019 Hewlett Packard Enterprise Development LP.
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,14 +16,27 @@
 # __author__ = "@netwookie"
 # __credits__ = ["Rick Kauffman"]
 # __license__ = "Apache2.0"
-# __version__ = "1.0.0"
 # __maintainer__ = "Rick Kauffman"
 # __email__ = "rick.a.kauffman@hpe.com"
 
-import time
-from flask import current_app
-import datetime
+from mongoengine import Q
+from database.sidekick import Sidekick
+from pyhpecfm.client import CFMClient
 
+def access_client():
 
-def utc_now_ts():
-    return int(time.time())
+    # Get user informaation.
+    creds=Sidekick.objects.first()
+    username=creds.user.encode('utf-8')
+    ipaddress=creds.ipaddress.encode('utf-8')
+    password=creds.passwd.encode('utf-8')
+
+    try:
+        # Create client connection
+        client=CFMClient(ipaddress,username,password)
+        client.connect()
+    except:
+        error='Failed to obtain a client connetion to the CFM controller.'
+        return error
+
+    return client
