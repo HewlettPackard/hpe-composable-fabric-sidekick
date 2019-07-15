@@ -53,4 +53,7 @@ def create_app(**config_overrides):
     from lags.views import lag_app
     app.register_blueprint(lag_app)
 
+    from snmp.views import snmp_app
+    app.register_blueprint(snmp_app)
+
     return app
