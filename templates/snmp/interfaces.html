@@ -5,20 +5,12 @@
 {% block content %}
 
 {% include "navbar.html" %}
-
-
     <div class="" id="home">
-
         <div class="container">
-          {{output}}
-
-          {{i}}
-
-          {{l}}
-
                 <!-- Start of the table container. -->
                   <div class="container mt-5">
-                    <h1> Composable Fabric Switch SNMP Interfaces </h1>
+                    <h1> Composable Fabric SNMP Interfaces for{{ ipaddress }} </h1>
+                    <h3> Please be patient, this takes about 10 seconds! <h3>
                     <div class="row tm-content-row">
                       <div class="col-sm-12 col-md-12 col-lg-12 col-xl-12 tm-block-col">
                         <div class="tm-bg-primary-dark tm-block tm-block-products">
@@ -26,27 +18,29 @@
                             <table class="table table-hover tm-table-big tm-product-table">
                               <thead>
                                 <tr>
-                                  <th scope="col">&nbsp;</th>
-                                  <th scope="col">Event Type</th>
-                                  <th scope="col">Severity</th>
+                                  <th scope="col">Interface</th>
+                                  <th scope="col">Desc</th>
                                   <th scope="col">Type</th>
-                                  <th scope="col">Description</th>
-                                  <th scope="col">&nbsp;</th>
+                                  <th scope="col">MTU</th>
+                                  <th scope="col">Speed</th>
+                                  <th scope="col">Admin Status</th>
+                                  <th scope="col">Oper Status</th>
+                                  <th scope="col">Pkts In</th>
+                                  <th scope="col">Pkts Out</th>
                                 </tr>
                               </thead>
                               <tbody>
-                              {% for i in a%}
+                              {% for port in output%}
                                 <tr>
-                                  <th scope="row"><input type="checkbox"></th>
-                                  <td class="tm-product-name">{{ i[0] }}</td>
-                                  <td>{{ i[1] }}</td>
-                                  <td>{{ i[2] }}</td>
-                                  <td>{{ i[3] }}</td>
-                                  <td>
-                                    <a href="#" class="tm-product-delete-link">
-                                      <i class="far fa-trash-alt tm-product-delete-icon"></i>
-                                    </a>
-                                  </td>
+                                  <td class="tm-product-name">{{ port.interface }}</td>
+                                  <td>{{ port.ifDesc }}</td>
+                                  <td>{{ port.ifType }}</td>
+                                  <td>{{ port.ifMtu }}</td>
+                                  <td>{{ port.ifSpeed }}</td>
+                                  <td>{{ port.ifAdminStatus }}</td>
+                                  <td>{{ port.ifOperStatus }}</td>
+                                  <td>{{ port.ifInUcastPkts }}</td>
+                                  <td>{{ port.ifOutUcastPkts }}</td>
                                 </tr>
                               {% endfor %}
                               </tbody>

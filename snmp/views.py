@@ -67,14 +67,35 @@ def snmp_interface():
         output=[]
         counter=0
         while counter < len(ifDesc):
+            # Check the type
+            if ifType[counter] == '6':
+                XifType='Access'
+            else:
+                XifType='Fabric'
 
-            interface={'Interface':counter+1,
+            # Check the Admin status
+            if ifAdminStatus[counter] == '1':
+                XifAdminStatus='up'
+            elif ifAdminStatus[counter] == '2':
+                XifAdminStatus='down'
+            else:
+                XifAdminStatus='unknown'
+
+            # Check the operation status
+            if ifOperStatus[counter] == '1':
+                XifOperStatus='up'
+            elif ifOperStatus[counter] == '2':
+                XifOperStatus='down'
+            else:
+                XifOperStatus='unknown'
+
+            interface={'interface':counter+1,
                        'ifDesc':ifDesc[counter],
-                       'ifType':ifType[counter],
+                       'ifType':XifType,
                        'ifMtu':ifMtu[counter],
                        'ifSpeed':ifSpeed[counter],
-                       'ifAdminStatus':ifAdminStatus[counter],
-                       'ifOperStatus':ifOperStatus[counter],
+                       'ifAdminStatus':XifAdminStatus,
+                       'ifOperStatus':XifOperStatus,
                        'ifInUcastPkts': ifInUcastPkts[counter],
                        'ifOutUcastPkts':ifOutUcastPkts[counter]
                        }
@@ -84,7 +105,7 @@ def snmp_interface():
 
 
         #send delete success
-        return render_template('snmp/interfaces.html', output=output)
+        return render_template('snmp/interfaces.html',output=output,ipaddress=ipaddress)
 
     # Get switch information switch database
 
@@ -93,7 +114,5 @@ def snmp_interface():
     ips=[]
     for switch in switch_array:
         ips.append(switch[1])
-
-
 
     return render_template('snmp/snmp_select_switch.html', switch_ip_list=ips,s=switch_array)
