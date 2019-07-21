@@ -55,6 +55,8 @@ def snmp_interface():
 
         # Get desired switch_ip
         ipaddress=request.form['ipaddress']
+
+        # Perform the SNMP gets
         ifDesc=get_ifDesc_oids(ipaddress)
         ifType=get_ifType_oids(ipaddress)
         ifMtu=get_ifMtu_oids(ipaddress)
