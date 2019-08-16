@@ -19,68 +19,102 @@
 # __version__ = "1.0.0"
 # __maintainer__ = "Rick Kauffman"
 # __email__ = "rick.a.kauffman@hpe.com"
+
 from flask import Blueprint, render_template, request, redirect, session, url_for, abort
 import os
 from werkzeug import secure_filename
 from mongoengine import Q
 import pygal
 import json
-
+from utilities.get_one_oid import get_oid
 # Place to stach the user temporarily
 from database.sidekick import Sidekick
 from pyhpecfm import fabric
 from pyhpecfm import system
 from utilities.get_client import access_client
+from utilities.get_ifdesc import get_ifDesc_oids
+from utilities.get_iftype import get_ifType_oids
+from utilities.get_ifmtu import get_ifMtu_oids
+from utilities.get_ifspeed import get_ifSpeed_oids
+from utilities.get_ifadminstatus import get_ifAdminStatus_oids
+from utilities.get_ifoperstatus import get_ifOperStatus_oids
+from utilities.get_ifinucastpkts import get_ifInUcastPkts_oids
+from utilities.get_ifoutucastpkts import get_ifOutUcastPkts_oids
+from utilities.switch_array import get_switches
 
-audit_app=Blueprint('audit_app', __name__)
+snmp_app=Blueprint('snmp_app', __name__)
 
-@audit_app.route('/view_alarms', methods=('GET', 'POST'))
-def view_alarms():
+@snmp_app.route('/snmp_interface', methods=('GET', 'POST'))
+def snmp_interface():
+    '''
+    Edit an existing entry from the database
 
-    # Get a client connection.
-    client=access_client()
+    '''
+    if request.method == 'POST':
+        # Get number of interfaces.
 
-    try:
-        cfm_audits=system.get_audit_logs(client)
-    except:
-        error="ERR-LOGIN - Failed to log into CFM controller"
-        return error
+        # Get desired switch_ip
+        ipaddress=request.form['ipaddress']
 
-    # Create a empty list for alarms
-    alarm_data=[]
+        # Perform the SNMP gets
+        ifDesc=get_ifDesc_oids(ipaddress)
+        ifType=get_ifType_oids(ipaddress)
+        ifMtu=get_ifMtu_oids(ipaddress)
+        ifSpeed=get_ifSpeed_oids(ipaddress)
+        ifAdminStatus=get_ifAdminStatus_oids(ipaddress)
+        ifOperStatus=get_ifOperStatus_oids(ipaddress)
+        ifInUcastPkts=get_ifInUcastPkts_oids(ipaddress)
+        ifOutUcastPkts=get_ifOutUcastPkts_oids(ipaddress)
 
-    # Loop through cfm_audits and process ALARMS
+        output=[]
+        counter=0
+        while counter < len(ifDesc):
+            # Check the type
+            if ifType[counter] == '6':
+                XifType='Access'
+            else:
+                XifType='Fabric'
 
-    for alarm in cfm_audits:
-        typex=alarm['record_type']
-        if typex == 'ALARM':
-            # Build dictionary to add to list
-            out=[alarm['data']['event_type'],alarm['record_type'],alarm['severity'],alarm['description']]
-            alarm_data.append(out)
+            # Check the Admin status
+            if ifAdminStatus[counter] == '1':
+                XifAdminStatus='up'
+            elif ifAdminStatus[counter] == '2':
+                XifAdminStatus='down'
+            else:
+                XifAdminStatus='unknown'
 
-    return render_template('audits/alarms.html', a=alarm_data)
+            # Check the operation status
+            if ifOperStatus[counter] == '1':
+                XifOperStatus='up'
+            elif ifOperStatus[counter] == '2':
+                XifOperStatus='down'
+            else:
+                XifOperStatus='unknown'
 
-@audit_app.route('/view_events', methods=('GET', 'POST'))
-def view_events():
+            interface={'interface':counter+1,
+                       'ifDesc':ifDesc[counter],
+                       'ifType':XifType,
+                       'ifMtu':ifMtu[counter],
+                       'ifSpeed':ifSpeed[counter],
+                       'ifAdminStatus':XifAdminStatus,
+                       'ifOperStatus':XifOperStatus,
+                       'ifInUcastPkts': ifInUcastPkts[counter],
+                       'ifOutUcastPkts':ifOutUcastPkts[counter]
+                       }
 
-    # Get a client connection.
-    client=access_client()
+            output.append(interface)
+            counter=counter+1
 
-    try:
-        cfm_audits=system.get_audit_logs(client)
-    except:
-        error="ERR-LOGIN - Failed to log into CFM controller"
-        return error
 
-    # Create a empty list for EVENTS
-    event_data=[]
+        #send delete success
+        return render_template('snmp/interfaces.html',output=output,ipaddress=ipaddress)
 
-    # Loop through cfm_audits and process EVENTS
-    for event in cfm_audits:
-        typex=event['record_type']
-        if typex == 'EVENT':
-            # Build dictionary to add to list
-            out=[event['description'],event['data']['event_type'],event['data']['object_name'],event['severity'],event['data']['event_type'],event['record_type']]
-            event_data.append(out)
+    # Get switch information switch database
 
-    return render_template('audits/events.html', e=event_data)
+    switch_array=get_switches()
+
+    ips=[]
+    for switch in switch_array:
+        ips.append(switch[1])
+
+    return render_template('snmp/snmp_select_switch.html', switch_ip_list=ips,s=switch_array)
