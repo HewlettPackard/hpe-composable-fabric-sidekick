@@ -1,0 +1,10 @@
+---
+name: plexxi
+description: Pack which intetgrates with the Plexxi fabric.
+keywords:
+    - hpe
+    - plexxi
+    - network
+version: 5.0.0
+author : Hewlett Packard Enterprise
+email:
