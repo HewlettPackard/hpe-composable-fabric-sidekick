@@ -195,6 +195,9 @@ def autolag():
 @lag_app.route('/makelags', methods=('GET', 'POST'))
 def makelags():
 
+    # Get a client connection.
+    client=access_client()
+
     a_list=[]
     a_list_out=[]
     b_list=[]
@@ -202,9 +205,14 @@ def makelags():
 
 
     #Get items from the chooser    rick.append('fail')
-    vlan=request.form['vlan'].encode('utf-8')
+    vlan_uuid=request.form['vlan'].encode('utf-8')
     a_switch=request.form['a_switch'].encode('utf-8')
     b_switch=request.form['b_switch'].encode('utf-8')
+    link_counter = 0
+
+    # Build static variables
+
+    description = "Symetrical Link Aggregation for DL attached servers"
 
 
     # Verify selections
@@ -212,32 +220,33 @@ def makelags():
         error="ERR009 - You picked the same switches. Please pick two different switches"
         return render_template('sidekick/dberror.html', error=error)
 
-    if a_switch == 'no select' or b_switch == 'no select' or vlan == 'no select':
+    if a_switch == 'no select' or b_switch == 'no select' or vlan_uuid == 'no select':
         error="ERR00910 - You missed a selection. Make sure to select valid items"
         return render_template('sidekick/dberror.html', error=error)
 
 
 
-    # Proecss a-side-ports
+    # Process a-side-ports
     a_switch_ports = Ports.objects(switch_uuid=a_switch)
     for a_switch in a_switch_ports:
-        a_port_label=a_switch['port_label'].encode('utf-8')
         a_silkscreen=a_switch['silkscreen'].encode('utf-8')
-        a_uuid=a_switch['uuid'].encode('utf-8')
-        a_switch_uuid=a_switch['switch_uuid'].encode('utf-8')
+        a_port_uuid=a_switch['uuid'].encode('utf-8')
         speed=a_switch['speed'].encode('utf-8')
+        speed=int(speed)
 
         # Find matching B side port    rick.append('fail')
         b_switch_ports = Ports.objects(silkscreen=a_silkscreen)
         for obj in b_switch_ports:
             if obj['switch_uuid'] == b_switch:
-                b_uuid=obj['uuid'].encode('utf-8')
-                b_silkscreen=obj['silkscreen'].encode('utf-8')
+                b_port_uuid=obj['uuid'].encode('utf-8')
 
-        #out=[a_silkscreen, b_silkscreen, a_uuid, b_uuid, speed, vlan]
+        # Only process ports 1 through 48
         if int(a_silkscreen) <= 48:
-            print 'working....'
-    return render_template('lags/autolag_success.html')
+            print 'writing lag to cfm....'
+            name = "Auto generated link aggregation-%s" % (link_counter)
+            link_counter = link_counter + 1
+            result = fabric.add_lags(client, name, description, vlan_uuid, a_port_uuid, b_port_uuid, speed)
+    return render_template('lags/autolag_success.html', result=result)
 
 
     #rick.append('fail')
