@@ -29,6 +29,7 @@ import json
 # Place to stach the user temporarily
 from database.temp import Temp
 from database.sidekick import Sidekick
+from database.ports import Ports
 from database.number import Number
 from database.switches import Switches
 from pyhpecfm.client import CFMClient
@@ -46,6 +47,9 @@ def main():
     '''
     # Clear switches database on new session.
     Switches.objects().delete()
+
+    # Clear switches database on new session.
+    Ports.objects().delete()
 
 
     return render_template('main/main.html')
@@ -104,9 +108,10 @@ def main_select():
         mac_address=switch['mac_address']
         name=switch['name']
         sw_version=switch['sw_version']
+        uuid=switch['uuid']
 
         # Write to switches database
-        switch_info=Switches(health=health,ip_address=ip_address, mac_address=mac_address, name=name, sw_version=sw_version)
+        switch_info=Switches(health=health,ip_address=ip_address, mac_address=mac_address, name=name, sw_version=sw_version, uuid=uuid)
         # Save the record
         try:
             switch_info.save()

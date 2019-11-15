@@ -7,7 +7,7 @@
 
 #  http://www.apache.org/licenses/LICENSE-2.0
 
-# Unless required by applicable law or agreed to in writing, software
+## Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
@@ -20,23 +20,28 @@
 # __email__ = "rick.a.kauffman@hpe.com"
 
 from mongoengine import Q
-from database.switches import Switches
+from database.sidekick import Sidekick
+from pyhpecfm.client import CFMClient
+from pyhpecfm import fabric
 
-def get_switches():
+def get_ports():
 
-    # Get switch information switch database
-    switch_array=[]
-    for s in Switches.objects():
-        # assigne local variables
-        health=s.health
-        ip_address=s.ip_address
-        mac_address=s.mac_address
-        name=s.name
-        sw_version=s.sw_version
-        uuid=s.uuid
-        # Creat a list for the record entry
-        out=[health,ip_address,mac_address,name,sw_version,uuid]
-        # Make a list of Lists
-        switch_array.append(out)
+    # Get user informaation.
+    creds=Sidekick.objects.first()
+    username=creds.user.encode('utf-8')
+    ipaddress=creds.ipaddress.encode('utf-8')
+    password=creds.passwd.encode('utf-8')
 
-    return switch_array
+    try:
+        # Create client connection
+        client=CFMClient(ipaddress,username,password)
+        client.connect()
+    except:
+        error='Failed to obtain a client connetion to the CFM controller.'
+        return error
+
+    params={}
+    cfm_ports=fabric.get_ports(client,params)
+
+
+    return cfm_ports
