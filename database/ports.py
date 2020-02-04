@@ -15,7 +15,6 @@
 # __author__ = "@netwookie"
 # __credits__ = ["Rick Kauffman"]
 # __license__ = "Apache2.0"
-# __version__ = "1.0.0"
 # __maintainer__ = "Rick Kauffman"
 # __email__ = "rick.a.kauffman@hpe.com"
 
@@ -25,10 +24,9 @@ import os
 
 from application import db
 
-class Switches(db.Document):
-    health = db.StringField(db_field="h", required=True)
-    ip_address = db.StringField(db_field="i", required=True)
-    mac_address = db.StringField(db_field="m", required=True)
-    name = db.StringField(db_field="n", required=True)
-    sw_version = db.StringField(db_field="s", required=True)
+class Ports(db.Document):
+    port_label = db.StringField(db_field="l", required=True)
+    silkscreen = db.StringField(db_field="s", required=True)
+    switch_uuid = db.StringField(db_field="x", required=True)
+    speed = db.StringField(db_field="p", required=True)
     uuid = db.StringField(db_field="u", required=True)
