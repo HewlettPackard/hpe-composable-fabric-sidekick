@@ -32,6 +32,7 @@ import json
 # Place to stach the user temporarily
 from database.sidekick import Sidekick
 from database.ports import Ports
+from database.b_ports import b_Ports
 from pyhpecfm.client import CFMClient
 from pyhpecfm import fabric
 from pyhpecfm import system
@@ -146,6 +147,9 @@ def autolag():
     # Clear ports database on new session.
     Ports.objects().delete()
 
+    # Clear ports database on new session.
+    b_Ports.objects().delete()
+
     switch_list_out=[]
     switch_list=[]
 
@@ -168,28 +172,9 @@ def autolag():
         vlan_list=[vlansx,uuid]
         vlan_list_out.append(vlan_list)
 
-    # Build ports database
-    port_info=[]
-    port_info_out=[]
-    ports=get_ports()
-    for port in ports:
-        speed=port['speed']['current']
-        speed=str(speed)
-        speed=speed.encode('utf-8')
-        uuid=port['uuid'].encode('utf-8')
-        port_label=port['port_label'].encode('utf-8')
-        silkscreen=port['silkscreen'].encode('utf-8')
-        switch_uuid=port['switch_uuid'].encode('utf-8')
-        # Build database entry to save creds
-        port = Ports(speed=speed,uuid=uuid,switch_uuid=switch_uuid,port_label=port_label,silkscreen=silkscreen)
-        # Save the record
-        try:
-            port.save()
-        except:
-            error="ERR001 - Failed to save port information"
-            return render_template('sidekick/dberror.html', error=error)
+    count = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48]
 
-    return render_template('lags/autolag.html', switches=switch_list_out, vlans=vlan_list_out)
+    return render_template('lags/autolag.html', switches=switch_list_out, vlans=vlan_list_out, count=count)
 
 
 @lag_app.route('/makelags', methods=('GET', 'POST'))
@@ -208,11 +193,8 @@ def makelags():
     vlan_uuid=request.form['vlan'].encode('utf-8')
     a_switch=request.form['a_switch'].encode('utf-8')
     b_switch=request.form['b_switch'].encode('utf-8')
-    link_counter = 0
-
-    # Build static variables
-
-    description = "Symetrical Link Aggregation for DL attached servers"
+    count=request.form['count'].encode('utf-8')
+    count = int(count)
 
 
     # Verify selections
@@ -225,28 +207,91 @@ def makelags():
         return render_template('sidekick/dberror.html', error=error)
 
 
+    # Build a side ports database
 
+    port_info=[]
+    port_info_out=[]
+    ports=get_ports()
+    for port in ports:
+        if port['switch_uuid'] == a_switch:
+            speed=port['speed']['current']
+            speed=str(speed)
+            speed=speed.encode('utf-8')
+            uuid=port['uuid'].encode('utf-8')
+            port_label=port['port_label'].encode('utf-8')
+            silkscreen=port['silkscreen'].encode('utf-8')
+            switch_uuid=port['switch_uuid'].encode('utf-8')
+            # Build database entry to save creds
+            port = Ports(speed=speed,uuid=uuid,switch_uuid=switch_uuid,port_label=port_label,silkscreen=silkscreen)
+            # Save the record
+            try:
+                port.save()
+            except:
+                error="ERR001 - Failed to save port information"
+                return render_template('sidekick/dberror.html', error=error)
+
+    # Build b side ports database
+    port_info=[]
+    port_info_out=[]
+    ports=get_ports()
+    for port in ports:
+        if port['switch_uuid'] == b_switch:
+            speed=port['speed']['current']
+            speed=str(speed)
+            speed=speed.encode('utf-8')
+            uuid=port['uuid'].encode('utf-8')
+            port_label=port['port_label'].encode('utf-8')
+            silkscreen=port['silkscreen'].encode('utf-8')
+            switch_uuid=port['switch_uuid'].encode('utf-8')
+            # Build database entry to save creds
+            port = b_Ports(speed=speed,uuid=uuid,switch_uuid=switch_uuid,port_label=port_label,silkscreen=silkscreen)
+            # Save the record
+            try:
+                port.save()
+            except:
+                error="ERR001 - Failed to save port information"
+                return render_template('sidekick/dberror.html', error=error)
+
+    # Build static variables
+
+    description = "Symetrical Link Aggregation for DL attached servers"
+    test=[]
+    port_counter = 1
     # Process a-side-ports
-    a_switch_ports = Ports.objects(switch_uuid=a_switch)
-    for a_switch in a_switch_ports:
-        a_silkscreen=a_switch['silkscreen'].encode('utf-8')
-        a_port_uuid=a_switch['uuid'].encode('utf-8')
-        speed=a_switch['speed'].encode('utf-8')
+    while port_counter <= count:
+        a_switch_ports = Ports.objects(silkscreen=str(port_counter))
+        port_counter=port_counter + 1
+        a_silkscreen=a_switch_ports[0]['silkscreen'].encode('utf-8')
+        a_port_uuid=a_switch_ports[0]['uuid'].encode('utf-8')
+        speed=a_switch_ports[0]['speed'].encode('utf-8')
         speed=int(speed)
-
+        #
         # Find matching B side port    rick.append('fail')
-        b_switch_ports = Ports.objects(silkscreen=a_silkscreen)
+        b_switch_ports = b_Ports.objects(silkscreen=a_silkscreen)
         for obj in b_switch_ports:
             if obj['switch_uuid'] == b_switch:
                 b_port_uuid=obj['uuid'].encode('utf-8')
+                b_port_silk=obj['silkscreen'].encode('utf-8')
+        out = [a_silkscreen,b_port_silk,speed,a_port_uuid, b_port_uuid,port_counter, count]
 
-        # Only process ports 1 through 48
-        if int(a_silkscreen) <= 48:
-            print 'writing lag to cfm....'
-            name = "Auto generated link aggregation-%s" % (link_counter)
-            link_counter = link_counter + 1
-            result = fabric.add_lags(client, name, description, vlan_uuid, a_port_uuid, b_port_uuid, speed)
+
+        print 'writing lag to cfm....'
+        name = "Auto generated link aggregation-%s" % (port_counter)
+        result = fabric.add_lags(client, name, description, vlan_uuid, a_port_uuid, b_port_uuid, speed)
+        test.append(out)
+        print test
+
     return render_template('lags/autolag_success.html', result=result)
 
 
     #rick.append('fail')
+
+
+    @lag_app.route('/testports', methods=('GET', 'POST'))
+    def testports():
+
+        # Process a-side-ports
+        a_switch_ports = Ports.objects(switch_uuid=a_switch)
+        for i in sorted (silkscreen.keys()):
+            print i
+        return render_template('lags/autolag_success.html')
