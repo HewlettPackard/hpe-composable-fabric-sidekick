@@ -21,7 +21,7 @@
 
 from flask import Blueprint, render_template, request, redirect, session, url_for, abort
 import os
-from werkzeug import secure_filename
+from werkzeug.utils import secure_filename
 from mongoengine import Q
 import pygal
 import json
@@ -65,11 +65,12 @@ def main_select():
     ipaddress=request.form['ipaddress']
     user=request.form['user']
     passwd=request.form['passwd']
+    print(user)
+    print(ipaddress)
+    print(passwd)
 
-    # Authenticat to the controller
-    client=CFMClient(ipaddress,user,passwd)
-    client.connect()
 
+    # rick.append('fail')
     # Build database entry to save creds
     creds = Sidekick(user=user,passwd=passwd,ipaddress=ipaddress)
     # Save the record
@@ -78,6 +79,10 @@ def main_select():
     except:
         error="ERR001 - Failed to save login credentials"
         return render_template('sidekick/dberror.html', error=error)
+
+    # Authenticat to the controller
+    client=CFMClient(ipaddress,user,passwd)
+    client.connect()
 
 
     # Turn on to build num db on initial run
@@ -92,8 +97,8 @@ def main_select():
 
     # Returns a list a auto generated charts
     charts=build_charts()
-
     # Get the switches from the controller and save to the mongo database
+    rick.append('f')
     try:
         switches=fabric.get_switches(client)
     except:
@@ -113,6 +118,7 @@ def main_select():
         # Write to switches database
         switch_info=Switches(health=health,ip_address=ip_address, mac_address=mac_address, name=name, sw_version=sw_version, uuid=uuid)
         # Save the record
+        #rick.append('fail')
         try:
             switch_info.save()
         except:

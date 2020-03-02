@@ -21,7 +21,7 @@
 # __email__ = "rick.a.kauffman@hpe.com"
 from flask import Blueprint, render_template, request, redirect, session, url_for, abort
 import os
-from werkzeug import secure_filename
+from werkzeug.utils import secure_filename
 from mongoengine import Q
 import pygal
 import json
